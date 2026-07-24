@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>🚀 Vượt Chướng Ngại Vật</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      background: #0b0e1a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+    }
+
+    .game-wrapper {
+      background: linear-gradient(145deg, #141829, #1a1f2f);
+      border-radius: 32px;
+      padding: 24px 24px 28px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      position: relative;
+    }
+
+    .game-container {
+      position: relative;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6);
+    }
+
+    canvas {
+      display: block;
+      width: 600px;
+      height: 700px;
+      background: #0f1322;
+      touch-action: none;
+    }
+
+    /* HUD */
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px 0 18px;
+      color: #c8d0e6;
+      font-weight: 600;
+      font-size: 18px;
+      letter-spacing: 0.3px;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .hud-left,
+    .hud-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .hud-item {
+      background: rgba(255, 255, 255, 0.04);
+      padding: 6px 16px;
+      border-radius: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hud-item .icon {
+      font-size: 18px;
+    }
+    .hud-item .label {
+      font-size: 12px;
+      opacity: 0.6;
+      font-weight: 400;
+    }
+    .hud-item .value {
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #f0f4ff, #a0b4e0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      min-width: 30px;
+      text-align: center;
+    }
+    .hud-item .value.high {
+      background: linear-gradient(135deg, #ffd700, #ffaa00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hud-item .value.coin {
+      background: linear-gradient(135deg, #ffd700, #f7931e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Overlay */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      border-radius: 18px;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px 24px;
+      animation: fadeIn 0.5s ease;
+      z-index: 10;
+      background: rgba(8, 10, 22, 0.88);
+      backdrop-filter: blur(12px);
+      overflow-y: auto;
+    }
+    .overlay.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* Menu */
+    #startMenu .game-title {
+      font-size: 48px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffd700, #ff6b6b, #4a6cf7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+      letter-spacing: 2px;
+    }
+    #startMenu .game-subtitle {
+      color: #8a94b8;
+      font-size: 16px;
+      letter-spacing: 6px;
+      margin-bottom: 12px;
+    }
+
+    .menu-coins {
+      font-size: 20px;
+      color: #ffd700;
+      margin-bottom: 12px;
+      background: rgba(255, 215, 0, 0.08);
+      padding: 6px 24px;
+      border-radius: 40px;
+      border: 1px solid rgba(255, 215, 0, 0.15);
+    }
+
+    /* Shop skin */
+    .shop-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin: 10px 0 16px 0;
+      max-width: 420px;
+    }
+
+    .shop-item {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 16px;
+      padding: 8px 12px;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 72px;
+    }
+    .shop-item.active {
+      border-color: #fff;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+    }
+    .shop-item.locked {
+      opacity: 0.6;
+    }
+    .shop-item .color-preview {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      margin-bottom: 4px;
+    }
+    .shop-item .shop-name {
+      font-size: 11px;
+      color: #b0b8d0;
+      font-weight: 500;
+    }
+    .shop-item .shop-price {
+      font-size: 11px;
+      color: #ffd700;
+    }
+    .shop-item .shop-status {
+      font-size: 10px;
+      color: #6a7a9a;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4a6cf7, #6a3de8);
+      border: none;
+      color: #fff;
+      font-size: 20px;
+      font-weight: 700;
+      padding: 14px 48px;
+      border-radius: 60px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 8px 30px rgba(74, 108, 247, 0.35);
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-primary:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 12px 40px rgba(74, 108, 247, 0.5);
+    }
+    .btn-primary:active {
+      transform: scale(0.96);
+    }
+
+    .menu-hint {
+      color: #5a6488;
+      font-size: 13px;
+      margin-top: 14px;
+      letter-spacing: 1px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 8px 20px;
+      border-radius: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    /* Game Over */
+    #gameOverOverlay .game-over-title {
+      font-size: 44px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ff6b6b, #ee2d2d);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+      letter-spacing: 2px;
+    }
+    #gameOverOverlay .game-over-sub {
+      color: #7a84a8;
+      font-size: 16px;
+      margin-bottom: 18px;
+      letter-spacing: 4px;
+    }
+    #gameOverOverlay .game-over-score {
+      color: #e8eeff;
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    #gameOverOverlay .game-over-score span {
+      background: linear-gradient(135deg, #f0f4ff, #80a0e0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 38px;
+    }
+    #gameOverOverlay .game-over-high {
+      color: #8a94b8;
+      font-size: 17px;
+      margin-bottom: 8px;
+    }
+    #gameOverOverlay .game-over-high span {
+      color: #ffd700;
+      font-weight: 700;
+    }
+    #gameOverOverlay .game-over-coins {
+      color: #ffd700;
+      font-size: 18px;
+      margin-bottom: 22px;
+    }
+    .btn-restart {
+      background: linear-gradient(135deg, #4a6cf7, #6a3de8);
+      border: none;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+      padding: 14px 44px;
+      border-radius: 60px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 8px 30px rgba(74, 108, 247, 0.35);
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-restart:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 12px 40px rgba(74, 108, 247, 0.5);
+    }
+    .btn-restart:active {
+      transform: scale(0.96);
+    }
+
+    /* Controls hint */
+    .controls-hint {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      padding-top: 14px;
+      color: #4a5478;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      flex-wrap: wrap;
+    }
+    .controls-hint kbd {
+      background: rgba(255, 255, 255, 0.06);
+      padding: 4px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #8a94b8;
+      font-size: 12px;
+    }
+    .controls-hint .sep {
+      opacity: 0.2;
+    }
+
+    /* Responsive */
+    @media (max-width: 660px) {
+      .game-wrapper {
+        padding: 12px;
+        border-radius: 20px;
+      }
+      canvas {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 600 / 700;
+      }
+      .hud {
+        font-size: 14px;
+        padding: 10px 10px 0 10px;
+      }
+      .hud-item {
+        padding: 4px 12px;
+        font-size: 13px;
+      }
+      .hud-item .value {
+        font-size: 16px;
+        min-width: 24px;
+      }
+      #startMenu .game-title {
+        font-size: 34px;
+      }
+      .btn-primary {
+        font-size: 17px;
+        padding: 12px 34px;
+      }
+      .shop-item {
+        width: 62px;
+        padding: 6px 8px;
+      }
+      .shop-item .color-preview {
+        width: 30px;
+        height: 30px;
+      }
+      .game-over-title {
+        font-size: 32px;
+      }
+      .btn-restart {
+        font-size: 16px;
+        padding: 12px 32px;
+      }
+    }
+    @media (max-width: 400px) {
+      .game-wrapper {
+        padding: 6px;
+        border-radius: 14px;
+      }
+      .hud-item .label {
+        display: none;
+      }
+      #startMenu .game-title {
+        font-size: 26px;
+      }
+      .shop-item {
+        width: 54px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-wrapper">
+    <!-- HUD -->
+    <div class="hud">
+      <div class="hud-left">
+        <div class="hud-item">
+          <span class="icon">⭐</span>
+          <span class="label">Điểm</span>
+          <span class="value" id="scoreDisplay">0</span>
+        </div>
+        <div class="hud-item">
+          <span class="icon">🪙</span>
+          <span class="label">Xu</span>
+          <span class="value coin" id="coinDisplay">0</span>
+        </div>
+        <div class="hud-item">
+          <span class="icon">📈</span>
+          <span class="label">Lv</span>
+          <span class="value" id="levelDisplay">1</span>
+        </div>
+      </div>
+      <div class="hud-right">
+        <div class="hud-item">
+          <span class="icon">🏆</span>
+          <span class="label">Cao nhất</span>
+          <span class="value high" id="highScoreDisplay">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-container">
+      <canvas id="gameCanvas" width="600" height="700"></canvas>
+
+      <!-- MENU START -->
+      <div class="overlay active" id="startMenu">
+        <div class="game-title">🚀 VƯỢT CHƯỚNG</div>
+        <div class="game-subtitle">• NGẠI VẬT •</div>
+        <div class="menu-coins" id="menuCoinDisplay">🪙 0 xu</div>
+
+        <div class="shop-container" id="shopContainer"></div>
+
+        <button class="btn-primary" id="playBtn">▶ BẮT ĐẦU</button>
+        <div class="menu-hint">← ↑ → ↓ · A W S D · Chuột / Chạm</div>
+      </div>
+
+      <!-- GAME OVER -->
+      <div class="overlay" id="gameOverOverlay">
+        <div class="game-over-title">GAME OVER</div>
+        <div class="game-over-sub">• thử lại nào •</div>
+        <div class="game-over-score">Điểm &nbsp; <span id="finalScore">0</span></div>
+        <div class="game-over-high">🏆 Kỷ lục &nbsp; <span id="finalHighScore">0</span></div>
+        <div class="game-over-coins">🪙 Xu nhặt được: <span id="finalCoins">0</span></div>
+        <button class="btn-restart" id="restartBtn">🔄 CHƠI LẠI</button>
+      </div>
+    </div>
+
+    <div class="controls-hint">
+      <span><kbd>←</kbd> <kbd>→</kbd> hoặc <kbd>A</kbd> <kbd>D</kbd></span>
+      <span class="sep">•</span>
+      <span>🖱️ di chuột</span>
+      <span class="sep">•</span>
+      <span>📱 chạm kéo</span>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    //  GAME  –  VƯỢT CHƯỚNG NGẠI VẬT  (xu, shop, level)
+    // ============================================================
+
+    // -------- DOM --------
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const coinDisplay = document.getElementById('coinDisplay');
+    const levelDisplay = document.getElementById('levelDisplay');
+    const highScoreDisplay = document.getElementById('highScoreDisplay');
+    const finalScore = document.getElementById('finalScore');
+    const finalHighScore = document.getElementById('finalHighScore');
+    const finalCoins = document.getElementById('finalCoins');
+    const gameOverOverlay = document.getElementById('gameOverOverlay');
+    const startMenu = document.getElementById('startMenu');
+    const playBtn = document.getElementById('playBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const shopContainer = document.getElementById('shopContainer');
+    const menuCoinDisplay = document.getElementById('menuCoinDisplay');
+
+    const W = 600,
+      H = 700;
+
+    // -------- Cấu hình --------
+    const PLAYER_SIZE = 28;
+    const PLAYER_SPEED = 5.5;
+    const BASE_OBSTACLE_SPEED = 3.0;
+    const MAX_OBSTACLE_SPEED = 10;
+    const SPAWN_BASE = 28;
+    const SPAWN_MIN = 8;
+    const COIN_SIZE = 16;
+    const COIN_SPAWN_RATE = 40; // số frame giữa các lần spawn xu
+
+    // -------- Danh sách skin --------
+    const SKIN_LIST = [
+      { id: 'blue', color: '#3a7bd5', name: 'Xanh', price: 0 },
+      { id: 'red', color: '#e74c3c', name: 'Đỏ', price: 30 },
+      { id: 'green', color: '#2ecc71', name: 'Xanh lá', price: 30 },
+      { id: 'gold', color: '#f39c12', name: 'Vàng', price: 50 },
+      { id: 'purple', color: '#9b59b6', name: 'Tím', price: 50 },
+      { id: 'cyan', color: '#1abc9c', name: 'Xanh biển', price: 70 },
+      { id: 'orange', color: '#e67e22', name: 'Cam', price: 70 },
+      { id: 'pink', color: '#e84393', name: 'Hồng', price: 90 },
+      { id: 'white', color: '#ecf0f1', name: 'Trắng', price: 120 },
+      { id: 'black', color: '#2c3e50', name: 'Đen', price: 150 }
+    ];
+
+    // -------- Trạng thái người chơi & game --------
+    let player = { x: W / 2, y: H - 100, size: PLAYER_SIZE };
+    let obstacles = [];
+    let coins = [];
+    let particles = [];
+    let score = 0;
+    let coinCount = parseInt(localStorage.getItem('obstacleCoins')) || 0;
+    let highScore = parseInt(localStorage.getItem('obstacleGameHigh')) || 0;
+    let gameRunning = false;
+    let frameCount = 0;
+    let spawnCounter = 0;
+    let coinSpawnCounter = 0;
+    let difficulty = 1;
+    let level = 1;
+    let keys = { left: false, right: false, up: false, down: false };
+    let useMouseControl = false;
+    let mouseX = player.x;
+
+    // -------- Skin & Shop --------
+    let currentSkin = localStorage.getItem('playerSkin') || 'blue';
+    let ownedSkins = JSON.parse(localStorage.getItem('ownedSkins')) || ['blue'];
+
+    // -------- Hàm lưu dữ liệu --------
+    function saveGameData() {
+      localStorage.setItem('obstacleCoins', String(coinCount));
+      localStorage.setItem('obstacleGameHigh', String(highScore));
+      localStorage.setItem('playerSkin', currentSkin);
+      localStorage.setItem('ownedSkins', JSON.stringify(ownedSkins));
+    }
+
+    // -------- Spawn vật cản --------
+    function spawnObstacle() {
+      const size = 18 + Math.random() * 28;
+      const x = 20 + Math.random() * (W - size - 40);
+      const speed = Math.min(BASE_OBSTACLE_SPEED + difficulty * 0.4, MAX_OBSTACLE_SPEED);
+      const hue = (Math.random() * 60 + 340) % 360;
+      const sat = 70 + Math.random() * 30;
+      const lig = 50 + Math.random() * 30;
+      const color = `hsl(${hue}, ${sat}%, ${lig}%)`;
+      const shape = Math.floor(Math.random() * 3);
+      obstacles.push({
+        x,
+        y: -size,
+        size,
+        speed,
+        color,
+        shape,
+        rotation: 0,
+        rotSpeed: (Math.random() - 0.5) * 0.04,
+      });
+    }
+
+    // -------- Spawn xu --------
+    function spawnCoin() {
+      const size = COIN_SIZE;
+      const x = 30 + Math.random() * (W - 60);
+      const y = -size - 20;
+      coins.push({
+        x,
+        y,
+        size,
+        speed: 1.2 + difficulty * 0.15,
+        glow: 0,
+      });
+    }
+
+    // -------- Particles --------
+    function emitParticles(x, y, color, count = 18) {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 1.5 + Math.random() * 4;
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 1,
+          life: 1,
+          decay: 0.012 + Math.random() * 0.025,
+          size: 3 + Math.random() * 6,
+          color: color,
+        });
+      }
+    }
+
+    // -------- Reset game (giữ nguyên xu, skin, shop) --------
+    function resetGame() {
+      player.x = W / 2;
+      player.y = H - 100;
+      obstacles = [];
+      coins = [];
+      particles = [];
+      score = 0;
+      level = 1;
+      frameCount = 0;
+      spawnCounter = 0;
+      coinSpawnCounter = 0;
+      difficulty = 1;
+      gameRunning = true;
+      gameOverOverlay.classList.remove('active');
+      startMenu.classList.remove('active');
+      scoreDisplay.textContent = '0';
+      levelDisplay.textContent = '1';
+      useMouseControl = false;
+      mouseX = player.x;
+      keys = { left: false, right: false, up: false, down: false };
+    }
+
+    // -------- Game Over --------
+    function gameOver() {
+      gameRunning = false;
+      let earnedCoins = 0;
+      // Tính xu nhặt được trong game (coinCount đã tăng, nhưng ta lưu riêng)
+      // Ta sẽ tính lại bằng cách lấy coinCount hiện tại trừ đi số xu trước khi chơi
+      // Thay vì phức tạp, ta lưu biến coinsEarned
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('obstacleGameHigh', String(highScore));
+        highScoreDisplay.textContent = highScore;
+      }
+      finalScore.textContent = score;
+      finalHighScore.textContent = highScore;
+      // Hiển thị số xu có được trong game (ta sẽ tính sau khi kết thúc)
+      // Ta dùng biến global coinsEarnedInGame
+      finalCoins.textContent = coinsEarnedInGame;
+      gameOverOverlay.classList.add('active');
+      saveGameData();
+    }
+
+    let coinsEarnedInGame = 0; // số xu nhặt được trong game hiện tại
+
+    // -------- Cập nhật --------
+    function update() {
+      if (!gameRunning) return;
+      frameCount++;
+
+      // Tính level dựa trên điểm
+      level = 1 + Math.floor(score / 80);
+      if (level > 20) level = 20;
+      difficulty = 1 + (level - 1) * 0.45;
+      levelDisplay.textContent = level;
+
+      const spawnRate = Math.max(SPAWN_MIN, SPAWN_BASE - difficulty * 1.5);
+
+      // Spawn vật cản
+      spawnCounter++;
+      if (spawnCounter >= spawnRate) {
+        spawnCounter = 0;
+        const count = Math.random() < 0.15 + difficulty * 0.04 ? 2 : 1;
+        for (let i = 0; i < count; i++) spawnObstacle();
+      }
+
+      // Spawn xu
+      coinSpawnCounter++;
+      if (coinSpawnCounter >= Math.max(20, COIN_SPAWN_RATE - difficulty * 2)) {
+        coinSpawnCounter = 0;
+        if (Math.random() < 0.5) spawnCoin();
+      }
+
+      // Di chuyển người chơi
+      let dx = 0,
+        dy = 0;
+      if (keys.left) dx = -PLAYER_SPEED;
+      if (keys.right) dx = PLAYER_SPEED;
+      if (keys.up) dy = -PLAYER_SPEED;
+      if (keys.down) dy = PLAYER_SPEED;
+
+      if (useMouseControl) {
+        const diff = mouseX - player.x;
+        if (Math.abs(diff) > 2) {
+          dx = Math.sign(diff) * Math.min(PLAYER_SPEED, Math.abs(diff) * 0.18);
+        }
+      }
+      if (!keys.left && !keys.right && useMouseControl) {
+        const diff = mouseX - player.x;
+        if (Math.abs(diff) > 2) {
+          dx = Math.sign(diff) * Math.min(PLAYER_SPEED, Math.abs(diff) * 0.18);
+        }
+      }
+
+      player.x += dx;
+      player.y += dy;
+      const half = player.size / 2;
+      player.x = Math.max(half, Math.min(W - half, player.x));
+      player.y = Math.max(half + 20, Math.min(H - half - 10, player.y));
+
+      // Cập nhật vật cản
+      for (let i = obstacles.length - 1; i >= 0; i--) {
+        const o = obstacles[i];
+        o.y += o.speed;
+        o.rotation += o.rotSpeed;
+
+        const dist = Math.hypot(o.x - player.x, o.y - player.y);
+        const threshold = (o.size + player.size) / 2 * 0.8;
+        if (dist < threshold) {
+          emitParticles(player.x, player.y, '#ff6b6b', 30);
+          emitParticles(o.x, o.y, o.color, 20);
+          gameOver();
+          return;
+        }
+
+        if (o.y > H + 60) {
+          obstacles.splice(i, 1);
+          if (gameRunning) {
+            score += Math.floor(1 + difficulty * 0.5);
+            scoreDisplay.textContent = score;
+          }
+        }
+      }
+
+      // Cập nhật xu
+      for (let i = coins.length - 1; i >= 0; i--) {
+        const c = coins[i];
+        c.y += c.speed;
+        c.glow = 0.5 + 0.5 * Math.sin(frameCount * 0.05 + i);
+
+        // Va chạm với người chơi
+        const dist = Math.hypot(c.x - player.x, c.y - player.y);
+        if (dist < (c.size + player.size) / 2) {
+          coinCount++;
+          coinsEarnedInGame++;
+          coinDisplay.textContent = coinCount;
+          emitParticles(c.x, c.y, '#ffd700', 12);
+          coins.splice(i, 1);
+          continue;
+        }
+
+        if (c.y > H + 30) {
+          coins.splice(i, 1);
+        }
+      }
+
+      // Particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.04;
+        p.life -= p.decay;
+        if (p.life <= 0) {
+          particles.splice(i, 1);
+        }
+      }
+
+      if (obstacles.length > 100) obstacles.splice(0, obstacles.length - 100);
+      if (coins.length > 30) coins.splice(0, coins.length - 30);
+    }
+
+    // -------- Vẽ --------
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      const grad = ctx.createRadialGradient(300, 350, 100, 300, 350, 500);
+      grad.addColorStop(0, '#19203a');
+      grad.addColorStop(1, '#0a0d18');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Lưới
+      ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < W; i += 40) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, H);
+        ctx.stroke();
+      }
+      for (let i = 0; i < H; i += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(W, i);
+        ctx.stroke();
+      }
+
+      // Vật cản
+      for (const o of obstacles) {
+        ctx.save();
+        ctx.translate(o.x, o.y);
+        ctx.rotate(o.rotation);
+        const s = o.size;
+        const half = s / 2;
+        ctx.shadowColor = o.color + '60';
+        ctx.shadowBlur = 20;
+        ctx.fillStyle = o.color;
+        if (o.shape === 0) {
+          ctx.beginPath();
+          ctx.arc(0, 0, half, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        } else if (o.shape === 1) {
+          ctx.fillRect(-half, -half, s, s);
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(-half, -half, s, s);
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(0, -half);
+          ctx.lineTo(-half, half);
+          ctx.lineTo(half, half);
+          ctx.closePath();
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        }
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 0.2;
+        ctx.fillStyle = '#fff';
+        if (o.shape === 0) {
+          ctx.beginPath();
+          ctx.arc(-half * 0.25, -half * 0.25, half * 0.3, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (o.shape === 1) {
+          ctx.fillRect(-half * 0.3, -half * 0.3, half * 0.35, half * 0.35);
+        } else {
+          ctx.beginPath();
+          ctx.arc(-half * 0.2, -half * 0.3, half * 0.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        ctx.restore();
+      }
+
+      // Xu
+      for (const c of coins) {
+        const glow = c.glow || 0.5;
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur = 20 * glow;
+        ctx.fillStyle = '#ffd700';
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+        // Viền sáng
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = 'rgba(255,215,0,0.5)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.size / 2, 0, Math.PI * 2);
+        ctx.stroke();
+        // Ký hiệu $
+        ctx.fillStyle = '#8a6d00';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('$', c.x, c.y + 1);
+      }
+
+      // Particles
+      for (const p of particles) {
+        ctx.globalAlpha = p.life * 0.9;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 12;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * p.life * 0.8 + 1, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+
+      // Người chơi
+      const px = player.x,
+        py = player.y,
+        ps = player.size;
+      const skinColor = currentSkin ? SKIN_LIST.find(s => s.id === currentSkin)?.color || '#3a7bd5' : '#3a7bd5';
+      const glow = ctx.createRadialGradient(px, py, 2, px, py, ps * 1.4);
+      glow.addColorStop(0, skinColor + '40');
+      glow.addColorStop(1, skinColor + '00');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(px, py, ps * 1.4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.shadowColor = skinColor;
+      ctx.shadowBlur = 30;
+      const brightColor = lightenColor(skinColor, 40);
+      const darkColor = darkenColor(skinColor, 30);
+      const gradP = ctx.createRadialGradient(px - 4, py - 4, 2, px, py, ps);
+      gradP.addColorStop(0, brightColor);
+      gradP.addColorStop(0.7, skinColor);
+      gradP.addColorStop(1, darkColor);
+      ctx.fillStyle = gradP;
+      ctx.beginPath();
+      ctx.arc(px, py, ps / 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(px, py, ps / 2, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = '#fff';
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = 'rgba(255,255,255,0.4)';
+      ctx.beginPath();
+      ctx.arc(px - 5, py - 4, 4.5, 0, Math.PI * 2);
+      ctx.arc(px + 5, py - 4, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#1a2a4a';
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.arc(px - 6, py - 2, 2.2, 0, Math.PI * 2);
+      ctx.arc(px + 4, py - 2, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.beginPath();
+      ctx.arc(px - 7, py - 5, 1.2, 0, Math.PI * 2);
+      ctx.arc(px + 3, py - 5, 1.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#1a2a4a';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.arc(px, py + 2, 6, 0.1, Math.PI - 0.1);
+      ctx.stroke();
+
+      if (obstacles.length > 30 && gameRunning) {
+        ctx.fillStyle = `rgba(255, 100, 100, ${0.06 + Math.sin(Date.now() / 300) * 0.03})`;
+        ctx.font = 'bold 18px "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText('⚡ Tăng tốc!', W / 2, 16);
+      }
+    }
+
+    // -------- Helper màu --------
+    function hexToRgb(hex) {
+      let c = hex.replace('#', '');
+      if (c.length === 3) c = c[0] + c[0] + c[1] + c[1] + c[2] + c[2];
+      return {
+        r: parseInt(c.substring(0, 2), 16),
+        g: parseInt(c.substring(2, 4), 16),
+        b: parseInt(c.substring(4, 6), 16)
+      };
+    }
+
+    function rgbToHex(r, g, b) {
+      return '#' + [r, g, b].map(c => Math.min(255, Math.max(0, Math.round(c))).toString(16).padStart(2, '0')).join('');
+    }
+
+    function lightenColor(hex, amt) {
+      const { r, g, b } = hexToRgb(hex);
+      return rgbToHex(r + amt, g + amt, b + amt);
+    }
+
+    function darkenColor(hex, amt) {
+      const { r, g, b } = hexToRgb(hex);
+      return rgbToHex(r - amt, g - amt, b - amt);
+    }
+
+    // -------- Vòng lặp --------
+    function loop() {
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    // -------- Điều khiển --------
+    document.addEventListener('keydown', (e) => {
+      const key = e.key;
+      if (key === 'ArrowLeft' || key === 'a' || key === 'A') { keys.left = true;
+        e.preventDefault();
+        useMouseControl = false; }
+      if (key === 'ArrowRight' || key === 'd' || key === 'D') { keys.right = true;
+        e.preventDefault();
+        useMouseControl = false; }
+      if (key === 'ArrowUp' || key === 'w' || key === 'W') { keys.up = true;
+        e.preventDefault();
+        useMouseControl = false; }
+      if (key === 'ArrowDown' || key === 's' || key === 'S') { keys.down = true;
+        e.preventDefault();
+        useMouseControl = false; }
+      if (key === 'r' || key === 'R') {
+        if (!gameRunning && gameOverOverlay.classList.contains('active')) resetGame();
+      }
+    });
+    document.addEventListener('keyup', (e) => {
+      const key = e.key;
+      if (key === 'ArrowLeft' || key === 'a' || key === 'A') { keys.left = false;
+        e.preventDefault(); }
+      if (key === 'ArrowRight' || key === 'd' || key === 'D') { keys.right = false;
+        e.preventDefault(); }
+      if (key === 'ArrowUp' || key === 'w' || key === 'W') { keys.up = false;
+        e.preventDefault(); }
+      if (key === 'ArrowDown' || key === 's' || key === 'S') { keys.down = false;
+        e.preventDefault(); }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const mouseCanvasX = (e.clientX - rect.left) * scaleX;
+      mouseX = Math.max(0, Math.min(W, mouseCanvasX));
+      useMouseControl = true;
+    });
+
+    let touchId = null;
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      if (!touch) return;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const tx = (touch.clientX - rect.left) * scaleX;
+      const ty = (touch.clientY - rect.top) * scaleY;
+      mouseX = Math.max(0, Math.min(W, tx));
+      player.y = Math.max(player.size / 2 + 20, Math.min(H - player.size / 2 - 10, ty));
+      useMouseControl = true;
+      touchId = touch.identifier;
+    }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      for (const touch of e.changedTouches) {
+        if (touchId !== null && touch.identifier !== touchId) continue;
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const tx = (touch.clientX - rect.left) * scaleX;
+        const ty = (touch.clientY - rect.top) * scaleY;
+        mouseX = Math.max(0, Math.min(W, tx));
+        player.y = Math.max(player.size / 2 + 20, Math.min(H - player.size / 2 - 10, ty));
+        useMouseControl = true;
+      }
+    }, { passive: false });
+    canvas.addEventListener('touchend', (e) => { e.preventDefault();
+      touchId = null; }, { passive: false });
+    canvas.addEventListener('touchcancel', () => { touchId = null; });
+
+    // -------- Shop UI --------
+    function renderShop() {
+      shopContainer.innerHTML = '';
+      SKIN_LIST.forEach(skin => {
+        const owned = ownedSkins.includes(skin.id);
+        const isActive = currentSkin === skin.id;
+        const item = document.createElement('div');
+        item.className = `shop-item ${isActive ? 'active' : ''} ${!owned ? 'locked' : ''}`;
+        item.innerHTML = `
+          <div class="color-preview" style="background:${skin.color};"></div>
+          <div class="shop-name">${skin.name}</div>
+          <div class="shop-price">${owned ? (isActive ? '✅' : '✔️') : '🪙'+skin.price}</div>
+        `;
+        item.addEventListener('click', () => {
+          if (owned) {
+            // Chọn skin
+            currentSkin = skin.id;
+            saveGameData();
+            renderShop();
+            updateCoinDisplay();
+          } else {
+            // Mua skin
+            if (coinCount >= skin.price) {
+              if (confirm(`Mua skin "${skin.name}" với giá ${skin.price} xu?`)) {
+                coinCount -= skin.price;
+                ownedSkins.push(skin.id);
+                currentSkin = skin.id;
+                saveGameData();
+                renderShop();
+                updateCoinDisplay();
+                // Cập nhật HUD
+                coinDisplay.textContent = coinCount;
+              }
+            } else {
+              alert(`Bạn cần ${skin.price} xu để mua skin này!`);
+            }
+          }
+        });
+        // Hỗ trợ touch
+        item.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          item.click();
+        });
+        shopContainer.appendChild(item);
+      });
+    }
+
+    function updateCoinDisplay() {
+      menuCoinDisplay.textContent = `🪙 ${coinCount} xu`;
+    }
+
+    // -------- Nút --------
+    playBtn.addEventListener('click', () => {
+      coinsEarnedInGame = 0;
+      resetGame();
+    });
+    playBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      coinsEarnedInGame = 0;
+      resetGame();
+    });
+
+    restartBtn.addEventListener('click', () => {
+      coinsEarnedInGame = 0;
+      resetGame();
+    });
+    restartBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      coinsEarnedInGame = 0;
+      resetGame();
+    });
+
+    // -------- Khởi động --------
+    highScoreDisplay.textContent = highScore;
+    coinDisplay.textContent = coinCount;
+    levelDisplay.textContent = '1';
+    renderShop();
+    updateCoinDisplay();
+
+    startMenu.classList.add('active');
+    gameRunning = false;
+    loop();
+
+    // -------- Resize --------
+    function resizeCanvas() {
+      const wrapper = canvas.parentElement;
+      const maxW = wrapper.clientWidth;
+      if (maxW < 600) {
+        canvas.style.width = maxW + 'px';
+        canvas.style.height = (maxW * 700 / 600) + 'px';
+      } else {
+        canvas.style.width = '600px';
+        canvas.style.height = '700px';
+      }
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    console.log('🎮 Game Vượt Chướng Ngại Vật – Xu, Shop, Level');
+  </script>
+</body>
+</html>
